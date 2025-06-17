@@ -28,7 +28,6 @@ classdef DIP_m < matlab.apps.AppBase
         axImg             matlab.ui.control.UIAxes
         Panel             matlab.ui.container.Panel
         GridLayout2       matlab.ui.container.GridLayout
-        ax26              matlab.ui.control.UIAxes
         ax25              matlab.ui.control.UIAxes
         ax24              matlab.ui.control.UIAxes
         ax23              matlab.ui.control.UIAxes
@@ -317,7 +316,7 @@ classdef DIP_m < matlab.apps.AppBase
             cc_mean = mean(CC(:));
 
             for i=1:n
-                if CC(i) ~= 0 && CC(i) < cc_mean / 3
+                if CC(i) ~= 0 && CC(i) < cc_mean / 5
                     app.imageDeleteObj(:, i) = 0;
                 end
             end
@@ -328,7 +327,7 @@ classdef DIP_m < matlab.apps.AppBase
             rr_mean = mean(RR(:));
 
             for i =  1:m
-                if RR(i) ~= 0 && RR(i) < rr_mean / 3
+                if RR(i) ~= 0 && RR(i) < rr_mean / 5
                     app.imageDeleteObj(i, :) = 0;
                 end
             end
@@ -459,6 +458,7 @@ classdef DIP_m < matlab.apps.AppBase
                 app.alertInfo();
                 return;
             end
+            % 这里二值化均衡之后的图不如直接使用灰度图
             app.licenseBin = imbinarize(app.licenseGray);
             if mean(app.licenseBin(:)) > 0.5
                 % 如果原始车牌字符为黑色 那么二值化之后背景为白色 不利于切割 将其反转
@@ -473,8 +473,6 @@ classdef DIP_m < matlab.apps.AppBase
         % Button pushed function: Button24
         function Button24Pushed(app, event)
             %% 移除对象
-            % 直接移除对象的效果并不好 可能会移除一些偏旁部首 比如浙的上面两个 虽然消除之后应该依旧可以识别
-            % - 考虑形态学方法 使用开运算消除小圆点
             if isempty(app.licenseBin)
                 app.alertInfo();
                 return;
@@ -510,8 +508,6 @@ classdef DIP_m < matlab.apps.AppBase
             end
             app.license = app.my_split();
             assignin('base', "license", app.license);
-            axis(app.ax26, 'off');
-            imshow(app.license, 'Parent', app.ax26);
 
             words = {};
             others = {};
@@ -756,16 +752,6 @@ classdef DIP_m < matlab.apps.AppBase
             app.ax25.Layout.Row = 2;
             app.ax25.Layout.Column = 5;
             app.ax25.Visible = 'off';
-
-            % Create ax26
-            app.ax26 = uiaxes(app.GridLayout2);
-            title(app.ax26, '输出结果')
-            xlabel(app.ax26, ' ')
-            ylabel(app.ax26, ' ')
-            zlabel(app.ax26, ' ')
-            app.ax26.Layout.Row = 2;
-            app.ax26.Layout.Column = 6;
-            app.ax26.Visible = 'off';
 
             % Create Panel_2
             app.Panel_2 = uipanel(app.GridLayout);
